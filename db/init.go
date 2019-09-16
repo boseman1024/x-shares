@@ -2,9 +2,10 @@ package db
 
 import (
 	"fmt"
-	"time"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"shares/model"
+	"time"
 )
 
 var DB *gorm.DB
@@ -24,5 +25,8 @@ func Init(){
 	db.DB().SetMaxOpenConns(100)
 	//超时
 	db.DB().SetConnMaxLifetime(time.Second*30)
+	//建表
+	db.AutoMigrate(&model.User{})
+
 	DB = db
 }

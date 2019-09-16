@@ -6,12 +6,12 @@ import (
 
 func AuthRequired() gin.HandlerFunc{
 	return func(c *gin.Context){
-		c.next()
+		c.Next()
 	}
 }
 
 func GetCurrentUser() gin.HandlerFunc{
 	return func(c *gin.Context){
-		c.next()
+		c.Next()
 	}
 }

@@ -3,12 +3,12 @@ package serializer
 import "shares/model"
 
 type Response struct {
-	Code int `json:"code`
+	Code int         `json:"code`
 	Data interface{} `json:"data"`
-	Msg string `json:"msg"`
+	Msg  string      `json:"msg"`
 }
 
-type LoginResponse struct{
+type LoginResponse struct {
 	Token string
-	User model.User
+	User  model.User
 }

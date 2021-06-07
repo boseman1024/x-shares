@@ -17,6 +17,7 @@ type UserRegisterService struct {
 	Password        string `from:"password" json:"password" binding:"required,min=6,max=30"`
 	PasswordConfirm string `from:"password_confirm" json:"password_confirm" binding:"required,min=6,max=30"`
 }
+type UserService struct{}
 
 func (service *UserLoginService) Login() (string, model.User, *serializer.Response) {
 	var user model.User
@@ -64,6 +65,7 @@ func (service *UserRegisterService) Register() (model.User, *serializer.Response
 			Msg:  "注册失败",
 		}
 	}
+	user.Password = ""
 	return user, nil
 }
 
@@ -90,4 +92,19 @@ func (service *UserRegisterService) Valid() *serializer.Response {
 		}
 	}
 	return nil
+}
+
+func (service *UserService) Get(id string) *serializer.Response {
+	var user model.User
+	if err := db.DB.First(&user, id).Error; err != nil {
+		return &serializer.Response{
+			Code: 107,
+			Msg:  "获取用户失败",
+		}
+	}
+	user.Password = ""
+	return &serializer.Response{
+		Code: 200,
+		Data: user,
+	}
 }

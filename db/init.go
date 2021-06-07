@@ -10,9 +10,9 @@ import (
 
 var DB *gorm.DB
 
-func Init(){
+func Init() {
 	db, err := gorm.Open("mysql", "root:123456@/shares?charset=utf8&parseTime=True&loc=Local")
-	if err!=nil{
+	if err != nil {
 		fmt.Println("连接数据库失败")
 		panic(err)
 	}
@@ -24,9 +24,13 @@ func Init(){
 	//最大打开连接数
 	db.DB().SetMaxOpenConns(100)
 	//超时
-	db.DB().SetConnMaxLifetime(time.Second*30)
+	db.DB().SetConnMaxLifetime(time.Second * 30)
 	//建表
 	db.AutoMigrate(&model.User{})
-
+	db.AutoMigrate(&model.Share{})
+	db.AutoMigrate(&model.Category{})
+	db.AutoMigrate(&model.ShareTag{})
+	db.AutoMigrate(&model.Follow{})
+	db.AutoMigrate(&model.Heart{})
 	DB = db
 }

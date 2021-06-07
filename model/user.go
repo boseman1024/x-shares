@@ -7,11 +7,13 @@ import (
 
 type User struct {
 	gorm.Model
-	Username string `json:"username"`
-	Password string `json:"password,omitempty"`
-	Nickname string `json:"nickname"`
-	Status   string `json:"status,omitempty"`
-	Avatar   string `gorm:"size:1000" json:"avatar,omitempty"`
+	Username string  `json:"username"`
+	Password string  `json:"password,omitempty"`
+	Nickname string  `json:"nickname"`
+	Status   string  `json:"status,omitempty"`
+	Avatar   string  `gorm:"size:1000" json:"avatar"`
+	Note     string  `gorm:"size:255" json:"note"`
+	Share    []Share `gorm:"ForeignKey:UserRefer"`
 }
 
 const (

@@ -6,8 +6,10 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"math/rand"
 	"os"
 	"path"
+	"shares/conf"
 	"shares/serializer"
 	"shares/service"
 	"strconv"
@@ -55,9 +57,33 @@ func ShareInfo(c *gin.Context) {
 		})
 	}
 }
+
 func ShareAdd(c *gin.Context) {
+	var conf conf.Conf
+	filePath, confErr := conf.GetConf("filePath")
+	if confErr != nil {
+		c.JSON(200, serializer.Response{
+			Code: 211,
+			Msg:  "配置文件加载失败",
+		})
+		c.Abort()
+	}
+	fileUrl, confErr := conf.GetConf("fileUrl")
+	if confErr != nil {
+		c.JSON(200, serializer.Response{
+			Code: 211,
+			Msg:  "配置文件加载失败",
+		})
+		c.Abort()
+	}
+
 	file, _ := c.FormFile("file")
-	err := c.SaveUploadedFile(file, "C:\\404\\403\\tools\\nginx-1.16.1\\html\\img\\"+file.Filename)
+	userFilePath := filePath + c.PostForm("userId") + "\\"
+	randStr := strconv.FormatUint(rand.Uint64(), 10) + "_"
+	if _, err := os.Stat(userFilePath); err != nil {
+		os.Mkdir(userFilePath, os.ModePerm)
+	}
+	err := c.SaveUploadedFile(file, userFilePath+randStr+file.Filename)
 	if err != nil {
 		c.JSON(200, serializer.Response{
 			Code: 211,
@@ -91,7 +117,7 @@ func ShareAdd(c *gin.Context) {
 		c.Abort()
 	}
 	thumbnail := imaging.Fill(img, 600, 600, imaging.Center, imaging.Lanczos)
-	thumbnailFile, thumbnailFileErr := os.Create("C:\\404\\403\\tools\\nginx-1.16.1\\html\\img\\" + file.Filename + "_thumbnail.jpg")
+	thumbnailFile, thumbnailFileErr := os.Create(userFilePath + randStr + file.Filename + "_thumbnail.jpg")
 	if thumbnailFileErr != nil {
 		c.JSON(200, serializer.Response{
 			Code: 211,
@@ -99,19 +125,15 @@ func ShareAdd(c *gin.Context) {
 		})
 		c.Abort()
 	}
-	if ext == ".jpg" {
-		jpeg.Encode(thumbnailFile, thumbnail, &jpeg.Options{Quality: 100})
-	}
-	if ext == ".png" {
-		png.Encode(thumbnailFile, thumbnail)
-	}
 	defer thumbnailFile.Close()
+	jpeg.Encode(thumbnailFile, thumbnail, &jpeg.Options{Quality: 100})
 
 	var shareService service.ShareService
-	shareService.Img = "http://localhost/img/" + file.Filename
-	val, err := strconv.ParseUint(c.PostForm("userId"), 10, 32)
+	shareService.Img = fileUrl + c.PostForm("userId") + "/" + randStr + file.Filename
+	userId, _ := strconv.ParseUint(c.PostForm("userId"), 10, 32)
 	tags := c.PostForm("tags")
-	if share, err := shareService.Insert(uint(val), tags); err != nil {
+	categoryId, _ := strconv.ParseUint(c.PostForm("categoryId"), 10, 32)
+	if share, err := shareService.Insert(uint(userId), tags, uint(categoryId)); err != nil {
 		c.JSON(200, err)
 	} else {
 		c.JSON(200, serializer.Response{

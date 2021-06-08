@@ -22,7 +22,7 @@ func (service *ShareListService) Index() *serializer.Response {
 	var shares []model.Share
 	err := db.DB.Preload("User", func(db *gorm.DB) *gorm.DB {
 		return db.Select("id,nickname,note,avatar").Unscoped()
-	}).Joins("left join follows on follows.following_id = user_refer").Where("follows.user_id=?", service.Uid).Order("created_at desc").Find(&shares).Error
+	}).Preload("Category").Preload("ShareTag").Joins("left join follows on follows.following_id = user_refer").Where("follows.user_id=?", service.Uid).Order("created_at desc").Find(&shares).Error
 	if err != nil {
 		log.Println(err)
 		return &serializer.Response{
@@ -42,7 +42,7 @@ func (service *ShareListService) List() *serializer.Response {
 	}
 	err := db.DB.Preload("User", func(db *gorm.DB) *gorm.DB {
 		return db.Select("id,nickname,note,avatar").Unscoped()
-	}).Preload("ShareTag").Where(share).Find(&shares).Error
+	}).Preload("ShareTag").Preload("Category").Where(share).Find(&shares).Error
 	if err != nil {
 		log.Println(err)
 		return &serializer.Response{
@@ -69,13 +69,14 @@ func (service *ShareService) Info() (model.Share, *serializer.Response) {
 	}
 	return share, nil
 }
-func (service *ShareService) Insert(userId uint, tags string) (model.Share, *serializer.Response) {
+func (service *ShareService) Insert(userId uint, tags string, category uint) (model.Share, *serializer.Response) {
 	var sharetag []model.ShareTag
 	json.Unmarshal([]byte(tags), &sharetag)
 	share := model.Share{
-		Img:       service.Img,
-		UserRefer: userId,
-		ShareTag:  sharetag,
+		Img:           service.Img,
+		UserRefer:     userId,
+		ShareTag:      sharetag,
+		CategoryRefer: category,
 	}
 	if err := db.DB.Create(&share).Error; err != nil {
 		return share, &serializer.Response{

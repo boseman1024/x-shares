@@ -32,5 +32,6 @@ func Init() {
 	db.AutoMigrate(&model.ShareTag{})
 	db.AutoMigrate(&model.Follow{})
 	db.AutoMigrate(&model.Heart{})
+	db.AutoMigrate(&model.Comment{})
 	DB = db
 }
